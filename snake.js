@@ -1,4 +1,9 @@
 
+
+// if (navigator.serviceWorker) {
+    // navigator.serviceWorker.register('service-worker.js');
+// }
+
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
@@ -26,7 +31,7 @@ class Rect {
 }
 
 let gridSize = new Size(10, 10);
-let gameViewRect;
+let gameViewRect
 let gameAreaScale;
 
 function updateCanvasSize() {
@@ -47,14 +52,14 @@ function drawLine(start, end) {
 
 function setUpBackground() {
 
-    // Window background
-    ctx.fillStyle = "#555";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
 
     // Game Area
     let widthScale = (canvas.width / gridSize.width) / (canvas.height / gridSize.height);
 
-    if (widthScale >= 1) {
+    if (widthScale > 1) {
         let gameViewSize = new Size(canvas.width / widthScale, canvas.height)
         gameViewRect = new Rect((canvas.width - gameViewSize.width) / 2, 0, gameViewSize.width, gameViewSize.height);
     } else {
@@ -64,8 +69,39 @@ function setUpBackground() {
 
     gameAreaScale = new Size(gameViewRect.width / gridSize.width, gameViewRect.height / gridSize.height);
 
-    ctx.fillStyle = "#333";
-    ctx.fillRect(gameViewRect.x, gameViewRect.y, gameViewRect.width, gameViewRect.height);
+    // ctx.fillStyle = "#333";
+    // ctx.fillRect(gameViewRect.x, gameViewRect.y, gameViewRect.width, gameViewRect.height);
+
+    showBackground()
+}
+
+function showBackground() {
+    let image = images.backgrounds.grass;
+    let xScale = Math.round((gameViewRect.width / image.width) / (gameViewRect.height / image.height) * 1000) / 1000;
+
+    if (xScale > 1) {
+        ctx.drawImage(image, gameViewRect.x, gameViewRect.y, gameViewRect.width, gameViewRect.height * xScale);
+
+        // Window background
+        ctx.fillStyle = "#555";
+        ctx.fillRect(0, 0, canvas.width, (canvas.height - gameViewRect.height) / 2); // Top
+        ctx.fillRect(0, gameViewRect.y + gameViewRect.height, canvas.width, (canvas.height - gameViewRect.height) / 2); // Top
+
+    } else if (xScale < 1) {
+        ctx.drawImage(image, gameViewRect.x, gameViewRect.y, gameViewRect.width / xScale, gameViewRect.height);
+
+        // Window background
+        ctx.fillStyle = "#555";
+        ctx.fillRect(0, 0, (canvas.width - gameViewRect.width) / 2, canvas.height); // Left
+        ctx.fillRect(gameViewRect.x + gameViewRect.width, 0, (canvas.width - gameViewRect.width) / 2, canvas.height); // Right
+
+    } else {
+        ctx.fillStyle = "#555";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.drawImage(image, gameViewRect.x, gameViewRect.y, gameViewRect.width, gameViewRect.height);
+    }
+
 }
 
 function drawGrid() {
@@ -96,6 +132,7 @@ class Snake {
         this.pos = new Coordinate(Math.floor(gridSize.width / 2), gridSize.height - 2);
         this.length = 1;
         this.oldPositions = [new Coordinate(Math.floor(gridSize.width / 2), gridSize.height - 1)];
+        this.oldMovements = [];
     }
 
     move() {
@@ -103,6 +140,7 @@ class Snake {
         let lastPos = Object.assign({}, this.pos)
 
         this.oldPositions.push(lastPos);
+        this.oldMovements.push(lastKey);
         this.oldPositions = this.oldPositions.slice(this.oldPositions.length - this.length, this.oldPositions.length);
 
         if (lastKey === "up") {
@@ -142,30 +180,128 @@ class Snake {
     }
 
     show() {
-        this.showHead();
         this.showBody();
+        this.showHead();
+        this.showTail();
     }
 
     showBody() {
+        let oldPositions = this.oldPositions.concat([this.pos]);
 
-        for (let pos of this.oldPositions) {
+        for (let index = 1; index < oldPositions.length - 1; index += 1) {
+            let last = oldPositions[index - 1];
+            let next = oldPositions[index + 1];
+
+            let pos = oldPositions[index];
             let area = new Rect(pos.x * gameAreaScale.width + gameViewRect.x, pos.y * gameAreaScale.height + gameViewRect.y, gameAreaScale.width, gameAreaScale.height);
 
-            ctx.fillStyle = "rgb(50, 150, 50)";
-            ctx.fillRect(area.x, area.y, area.width, area.height);
+            let change = [last.x - next.x, last.y - next.y];
+
+            // Straight
+            if (change[1] === 2 || change[1] === -2) {
+                drawRotatedImage(images.snake.straight, area, 0);
+                continue
+            } else if (change[0] === 2 || change[0] === -2) {
+                area.x += gameAreaScale.width;
+                drawRotatedImage(images.snake.straight, area, Math.PI / 2);
+                continue
+            }
+
+            // Corner
+            if (last.y > pos.y) { // Last down
+                if (next.x > pos.x) { // Next Right
+                    area.y += gameAreaScale.height;
+                    drawRotatedImage(images.snake.corner, area, -Math.PI / 2);
+                } else {
+                    drawRotatedImage(images.snake.corner, area, 0);
+                }
+            } else if (last.y < pos.y) { // Last up
+                if (next.x > pos.x) { // Next Right
+                    area.y += gameAreaScale.height;
+                    area.x += gameAreaScale.width;
+                    drawRotatedImage(images.snake.corner, area, Math.PI);
+                } else { // Next Left
+                    area.x += gameAreaScale.width;
+                    drawRotatedImage(images.snake.corner, area, Math.PI / 2);
+                }
+            } else if (last.x < pos.x) { // Last left
+                if (next.y > pos.y) { // Next down
+                    drawRotatedImage(images.snake.corner, area, 0);
+                } else { // Next up
+                    area.x += gameAreaScale.width;
+                    drawRotatedImage(images.snake.corner, area, Math.PI / 2);
+                }
+            } else if (last.x > pos.x) { // Last right
+                if (next.y > pos.y) { // Next down
+                    area.y += gameAreaScale.height;
+                    drawRotatedImage(images.snake.corner, area, -Math.PI / 2);
+                } else { // Next up
+                    area.y += gameAreaScale.height;
+                    area.x += gameAreaScale.width;
+                    drawRotatedImage(images.snake.corner, area, Math.PI);
+                }
+            }
         }
     }
 
     showHead() {
         let area = new Rect(this.pos.x * gameAreaScale.width + gameViewRect.x, this.pos.y * gameAreaScale.height + gameViewRect.y, gameAreaScale.width, gameAreaScale.height);
 
-        ctx.fillStyle = "rgb(50, 255, 50)";
-        ctx.fillRect(area.x, area.y, area.width, area.height);
+        if (lastUpdateKey === 'up') {
+            ctx.drawImage(images.snake.head, area.x, area.y, area.width, area.height);
+        } else if (lastUpdateKey === 'right') {
+            area.x += gameAreaScale.width;
+            drawRotatedImage(images.snake.head, area, Math.PI / 2);
+        } else if (lastUpdateKey === 'down') {
+            area.x += gameAreaScale.width;
+            area.y += gameAreaScale.height;
+            drawRotatedImage(images.snake.head, area, Math.PI);
+        } else if (lastUpdateKey === 'left') {
+            area.y += gameAreaScale.height;
+            drawRotatedImage(images.snake.head, area, -Math.PI / 2);
+        }
+    }
+
+    showTail() {
+        let pos = this.oldPositions[0];
+        let previous = this.oldPositions[1];
+
+        if (!previous) {
+            previous = this.pos;
+        }
+
+        let change = [pos.x - previous.x, pos.y - previous.y];
+        let area = new Rect(pos.x * gameAreaScale.width + gameViewRect.x, pos.y * gameAreaScale.height + gameViewRect.y, gameAreaScale.width, gameAreaScale.height);
+
+        if (change[0] === 1) {
+            area.y += gameAreaScale.height;
+            drawRotatedImage(images.snake.tail, area, -Math.PI / 2);
+        } else if (change[0] === -1) {
+            area.x += gameAreaScale.width;
+            drawRotatedImage(images.snake.tail, area, Math.PI / 2);
+        } else if (change[1] === 1) {
+            drawRotatedImage(images.snake.tail, area, 0);
+        } else if (change[1] === -1) {
+            area.x += gameAreaScale.width;
+            area.y += gameAreaScale.height;
+            drawRotatedImage(images.snake.tail, area, Math.PI);
+        }
     }
 }
 
+function drawRotatedImage(image, rect, rotation) {
+
+    ctx.translate(rect.x, rect.y);
+    ctx.rotate(rotation);
+
+    ctx.drawImage(image, 0, 0, rect.width, rect.height);
+
+    ctx.rotate(-rotation);
+    ctx.translate(-rect.x, -rect.y);
+}
+
 class FoodHandler {
-    constructor() {}
+    constructor() { }
 
     spawn() {
 
@@ -208,8 +344,10 @@ class FoodHandler {
         if (this.pos) {
             let area = new Rect(this.pos.x * gameAreaScale.width + gameViewRect.x, this.pos.y * gameAreaScale.height + gameViewRect.y, gameAreaScale.width, gameAreaScale.height);
 
-            ctx.fillStyle = "rgb(150, 150, 20)";
-            ctx.fillRect(area.x, area.y, area.width, area.height);
+            drawRotatedImage(images.food.apple, area, 0);
+
+            // ctx.fillStyle = "rgb(150, 150, 20)";
+            // ctx.fillRect(area.x, area.y, area.width, area.height);
         }
     }
 }
@@ -230,23 +368,23 @@ function updatePlayerInput() {
 }
 
 function badInput(keyCode) {
-    return ((lastUpdateKey === 'up' || lastUpdateKey === 'down') && (keyCode === 'up' || keyCode === 'down')) || 
-           ((lastUpdateKey === 'left' || lastUpdateKey === 'right') && (keyCode === 'right' || keyCode === 'left'));
+    return ((lastUpdateKey === 'up' || lastUpdateKey === 'down') && (keyCode === 'up' || keyCode === 'down')) ||
+        ((lastUpdateKey === 'left' || lastUpdateKey === 'right') && (keyCode === 'right' || keyCode === 'left'));
 }
 
 let snake = new Snake();
 let foodHandler = new FoodHandler();
 
 let lastFrameUpdate = performance.now();
-let gameSpeed = 1000; // time between game updates (ms)
+let gameSpeed = 40000 / (gridSize.width * gridSize.height); // time between game updates (ms)
 
 function gameLoop() {
 
     // Window setup
     updateCanvasSize();
     setUpBackground();
-    
-    drawGrid();
+
+    // drawGrid();
 
     if (performance.now() >= lastFrameUpdate + gameSpeed) {
         // Update
