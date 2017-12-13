@@ -1,35 +1,3 @@
-
-
-// if (navigator.serviceWorker) {
-    // navigator.serviceWorker.register('service-worker.js');
-// }
-
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
-
-class Coordinate {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-class Size {
-    constructor(width, height) {
-        this.width = width;
-        this.height = height;
-    }
-}
-
-class Rect {
-    constructor(x, y, width, height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
-}
-
 let gridSize = new Size(10, 10);
 let gameViewRect
 let gameAreaScale;
@@ -378,6 +346,9 @@ let foodHandler = new FoodHandler();
 let lastFrameUpdate = performance.now();
 let gameSpeed = 40000 / (gridSize.width * gridSize.height); // time between game updates (ms)
 
+let paused = false;
+foodHandler.update();
+
 function gameLoop() {
 
     // Window setup
@@ -386,7 +357,7 @@ function gameLoop() {
 
     // drawGrid();
 
-    if (performance.now() >= lastFrameUpdate + gameSpeed) {
+    if (performance.now() >= lastFrameUpdate + gameSpeed && !paused) {
         // Update
 
         foodHandler.update();
@@ -408,6 +379,8 @@ function gameLoop() {
         lastKey = 'up';
         lastUpdateKey = lastKey;
     }
+
+    showArrows();
 
     updatePlayerInput();
     requestAnimationFrame(gameLoop)
