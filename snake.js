@@ -97,15 +97,19 @@ function drawGrid() {
 
 class Snake {
     constructor() {
-        this.pos = new Coordinate(Math.floor(gridSize.width / 2), gridSize.height - 2);
+        this.pos = new Coordinate(Math.floor(gridSize.width / 2), Math.floor(gridSize.height / 2));
         this.length = 1;
-        this.oldPositions = [new Coordinate(Math.floor(gridSize.width / 2), gridSize.height - 1)];
+
+        let tail = this.pos.copy();
+        tail.y += 1;
+
+        this.oldPositions = [tail];
         this.oldMovements = [];
     }
 
     move() {
 
-        let lastPos = Object.assign({}, this.pos)
+        let lastPos = this.pos.copy();
 
         this.oldPositions.push(lastPos);
         this.oldMovements.push(lastKey);
@@ -311,7 +315,6 @@ class FoodHandler {
     show() {
         if (this.pos) {
             let area = new Rect(this.pos.x * gameAreaScale.width + gameViewRect.x, this.pos.y * gameAreaScale.height + gameViewRect.y, gameAreaScale.width, gameAreaScale.height);
-
             drawRotatedImage(images.food.apple, area, 0);
 
             // ctx.fillStyle = "rgb(150, 150, 20)";
@@ -336,6 +339,7 @@ function updatePlayerInput() {
 }
 
 function badInput(keyCode) {
+    paused = false;
     return ((lastUpdateKey === 'up' || lastUpdateKey === 'down') && (keyCode === 'up' || keyCode === 'down')) ||
         ((lastUpdateKey === 'left' || lastUpdateKey === 'right') && (keyCode === 'right' || keyCode === 'left'));
 }
@@ -346,7 +350,7 @@ let foodHandler = new FoodHandler();
 let lastFrameUpdate = performance.now();
 let gameSpeed = 40000 / (gridSize.width * gridSize.height); // time between game updates (ms)
 
-let paused = false;
+let paused = true;
 foodHandler.update();
 
 function gameLoop() {
@@ -369,16 +373,17 @@ function gameLoop() {
         lastUpdateKey = lastKey;
     }
 
-    snake.show();
-    foodHandler.show();
-
     if (snake.dead()) {
         snake = new Snake();
         foodHandler.spawn();
 
         lastKey = 'up';
         lastUpdateKey = lastKey;
+        paused = true;
     }
+
+    snake.show();
+    foodHandler.show();
 
     showArrows();
 
