@@ -10,12 +10,6 @@ class Coordinate {
         this.x = x;
         this.y = y;
     }
-    getList() {
-        return [this.x, this.y];
-    }
-    copy() {
-        return new Coordinate(this.x, this.y);
-    }
 }
 
 class Size {
