@@ -1,4 +1,4 @@
-let gridSize = new Size(10, 10);
+let gridSize = new Size(5, 5);
 let gameViewRect
 let gameAreaScale;
 
@@ -97,15 +97,15 @@ function drawGrid() {
 
 class Snake {
     constructor() {
-        this.pos = new Coordinate(Math.floor(gridSize.width / 2), gridSize.height - 2);
+        this.pos = new Coordinate(Math.floor(gridSize.width / 2), Math.ceil(gridSize.width / 2));
         this.length = 1;
-        this.oldPositions = [new Coordinate(Math.floor(gridSize.width / 2), gridSize.height - 1)];
+        this.oldPositions = [new Coordinate(this.pos.x, this.pos.y + 1)];
         this.oldMovements = [];
     }
 
     move() {
 
-        let lastPos = Object.assign({}, this.pos)
+        let lastPos = this.pos.copy();
 
         this.oldPositions.push(lastPos);
         this.oldMovements.push(lastKey);
@@ -120,6 +120,8 @@ class Snake {
         } else if (lastKey === "right") {
             this.pos.x += 1;
         }
+
+        this.pos = this.teleport(this.pos);
     }
 
     eat() {
@@ -132,7 +134,25 @@ class Snake {
     }
 
     dead() {
-        return (!this.onGrid() || this.touchingSelf());
+        return (this.touchingSelf());
+    }
+
+    teleport(pos) {
+
+        let originalPos = pos.copy();
+
+        if (pos.x < 0) {
+            pos.x = gridSize.width - 1;
+        } else if (pos.x > gridSize.width - 1) {
+            pos.x = 0;
+        }
+
+        if (pos.y < 0) {
+            pos.y = gridSize.height - 1;
+        } else if (pos.y > gridSize.height - 1) {
+            pos.y = 0;
+        }
+        return pos;
     }
 
     onGrid() {
@@ -158,13 +178,13 @@ class Snake {
 
         for (let index = 1; index < oldPositions.length - 1; index += 1) {
             let last = oldPositions[index - 1];
-            let next = oldPositions[index + 1];
+            let next = oldPositions[index + 1].copy();
 
             let pos = oldPositions[index];
+
             let area = new Rect(pos.x * gameAreaScale.width + gameViewRect.x, pos.y * gameAreaScale.height + gameViewRect.y, gameAreaScale.width, gameAreaScale.height);
-
             let change = [last.x - next.x, last.y - next.y];
-
+            
             // Straight
             if (change[1] === 2 || change[1] === -2) {
                 drawRotatedImage(images.snake.straight, area, 0);
@@ -336,6 +356,7 @@ function updatePlayerInput() {
 }
 
 function badInput(keyCode) {
+    paused = false;
     return ((lastUpdateKey === 'up' || lastUpdateKey === 'down') && (keyCode === 'up' || keyCode === 'down')) ||
         ((lastUpdateKey === 'left' || lastUpdateKey === 'right') && (keyCode === 'right' || keyCode === 'left'));
 }
@@ -345,8 +366,9 @@ let foodHandler = new FoodHandler();
 
 let lastFrameUpdate = performance.now();
 let gameSpeed = 40000 / (gridSize.width * gridSize.height); // time between game updates (ms)
+gameSpeed = 300;
 
-let paused = false;
+let paused = true;
 foodHandler.update();
 
 function gameLoop() {
@@ -357,7 +379,7 @@ function gameLoop() {
 
     // drawGrid();
 
-    if (performance.now() >= lastFrameUpdate + gameSpeed && !paused) {
+    if (performance.now() >= lastFrameUpdate + gameSpeed && !paused && !key.isPressed('return')) {
         // Update
 
         foodHandler.update();
@@ -378,6 +400,7 @@ function gameLoop() {
 
         lastKey = 'up';
         lastUpdateKey = lastKey;
+        paused = true;
     }
 
     showArrows();
