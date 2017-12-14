@@ -387,6 +387,9 @@ function gameLoop() {
 
     showArrows();
 
+    showScore();
+    showHighScore();
+
     updatePlayerInput();
     requestAnimationFrame(gameLoop)
 }

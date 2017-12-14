@@ -37,3 +37,41 @@ function touching(rect1, rect2) {
         rect1.y + rect1.height > rect2.y &&
         rect1.y < rect2.y + rect2.height;
 }
+
+function showScore() {
+    let fontSize = canvas.width / 15;
+    let fontString = Math.round(fontSize).toString() + 'px scoreFont';
+    ctx.font = fontString;
+
+    let margin = 10;
+    let gap = 5;
+
+    ctx.textAlign = "left";
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillText(snake.length - 1, margin + gap, margin + gap + fontSize * 1.5);
+    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+    ctx.fillText(snake.length - 1, margin, margin + fontSize * 1.5);
+}
+
+function showHighScore() {
+    if (!localStorage.highScore) {
+        localStorage.highScore = snake.length - 1;
+    } else {
+        localStorage.highScore = Math.max(localStorage.highScore, snake.length - 1);
+    }
+
+    let fontSize = canvas.width / 15;
+    let fontString = Math.round(fontSize).toString() + 'px scoreFont';
+    ctx.font = fontString;
+
+    let margin = 10;
+    let gap = 5;
+
+    ctx.textAlign = "left";
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillText(localStorage.highScore, margin + gap, canvas.height - (margin + gap));
+    ctx.fillStyle = 'rgba(200, 200, 200, 1)';
+    ctx.fillText(localStorage.highScore, margin, canvas.height - (margin + gap));
+}
