@@ -5,7 +5,7 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 };
 
 if (mobile) {
-    canvas.addEventListener("touchstart", getMobileInput, false);
+    canvas.addEventListener("touchstart", triggerMobileInput, false);
 };
 
 let mobileButtons = [{ direction: 'up', rect: { x: 0.9, y: 0, width: 1.2, height: 1 } },
@@ -15,23 +15,28 @@ let mobileButtons = [{ direction: 'up', rect: { x: 0.9, y: 0, width: 1.2, height
 
 let buttonSize = new Size(canvas.width / 3, canvas.height / 2);
 
+function triggerMobileInput(e) {
+    let mouseRect = new Rect(mousePos.x, mousePos.y, 0, 0);
+
+    if (touching(mouseRect, fullscreenButtonRect)) {
+        getMobileInput(e)
+    }
+}
+
 function getMobileInput(e) {
+    let scaledMousePos = { x: e.touches[0].clientX / buttonSize.width, y: e.touches[0].clientY / buttonSize.height }
+    let scaledMouseRect = new Rect(scaledMousePos.x, scaledMousePos.y, 0, 0);
 
-    if (!cancelInput) {
-        let scaledMousePos = { x: e.touches[0].clientX / buttonSize.width, y: e.touches[0].clientY / buttonSize.height }
-        let scaledMouseRect = new Rect(scaledMousePos.x, scaledMousePos.y, 0, 0);
-
-        let direction;
-        for (button of mobileButtons) {
-            if (touching(button.rect, scaledMouseRect)) {
-                direction = button.direction;
-                break;
-            }
+    let direction;
+    for (button of mobileButtons) {
+        if (touching(button.rect, scaledMouseRect)) {
+            direction = button.direction;
+            break;
         }
-        if (direction) {
-            if (!badInput(direction)) {
-                lastKey = direction;
-            }
+    }
+    if (direction) {
+        if (!badInput(direction)) {
+            lastKey = direction;
         }
     }
 };

@@ -2,8 +2,6 @@
 // navigator.serviceWorker.register('service-worker.js');
 // }
 
-let cancelInput = false;
-
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
@@ -146,16 +144,14 @@ canvas.addEventListener('click', function () {
     let windowScale = canvas.height / 500;
     let mouseRect = new Rect(mousePos.x, mousePos.y, 0, 0);
 
-    console.log(mouseRect, fullscreenButtonRect)
     if (touching(mouseRect, fullscreenButtonRect)) {
 
         // Try change fullscreen
         if (window.innerHeight === screen.height) {
             exitFull();
-            cancelInput = true;
         } else {
-            enterFull();
-            cancelInput = true;
+            if (enterFull()) {
+            };
         }
     }
 });
