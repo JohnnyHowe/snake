@@ -390,8 +390,6 @@ function gameLoop() {
     showScore();
     showHighScore();
 
-    showFullScreenButton();
-
     updatePlayerInput();
     requestAnimationFrame(gameLoop)
 }

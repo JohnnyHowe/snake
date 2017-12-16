@@ -25,9 +25,5 @@ images = {
     },
     backgrounds: {
         grass: loadImage('images//backgrounds//grass.png'),
-    },
-    other: {
-        toFull: loadImage('images//other//toFull.png'),
-        fromFull: loadImage('images//other//fromFull.png'),
     }
 }
