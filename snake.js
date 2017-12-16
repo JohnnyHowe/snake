@@ -360,6 +360,7 @@ function gameLoop() {
     setUpBackground();
 
     // drawGrid();
+    console.log(cancelInput)
 
     if (performance.now() >= lastFrameUpdate + gameSpeed && !paused) {
         // Update
@@ -390,8 +391,12 @@ function gameLoop() {
     showScore();
     showHighScore();
 
+    showFullScreenButton();
+
     updatePlayerInput();
     requestAnimationFrame(gameLoop)
+
+    cancelInput = false;
 }
 
 gameLoop();

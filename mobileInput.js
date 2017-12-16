@@ -16,19 +16,22 @@ let mobileButtons = [{ direction: 'up', rect: { x: 0.9, y: 0, width: 1.2, height
 let buttonSize = new Size(canvas.width / 3, canvas.height / 2);
 
 function getMobileInput(e) {
-    let scaledMousePos = { x: e.touches[0].clientX / buttonSize.width, y: e.touches[0].clientY / buttonSize.height }
-    let scaledMouseRect = new Rect(scaledMousePos.x, scaledMousePos.y, 0, 0);
 
-    let direction;
-    for (button of mobileButtons) {
-        if (touching(button.rect, scaledMouseRect)) {
-            direction = button.direction;
-            break;
+    if (!cancelInput) {
+        let scaledMousePos = { x: e.touches[0].clientX / buttonSize.width, y: e.touches[0].clientY / buttonSize.height }
+        let scaledMouseRect = new Rect(scaledMousePos.x, scaledMousePos.y, 0, 0);
+
+        let direction;
+        for (button of mobileButtons) {
+            if (touching(button.rect, scaledMouseRect)) {
+                direction = button.direction;
+                break;
+            }
         }
-    }
-    if (direction) {
-        if (!badInput(direction)) {
-            lastKey = direction;
+        if (direction) {
+            if (!badInput(direction)) {
+                lastKey = direction;
+            }
         }
     }
 };

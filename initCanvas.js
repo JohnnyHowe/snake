@@ -2,6 +2,8 @@
 // navigator.serviceWorker.register('service-worker.js');
 // }
 
+let cancelInput = false;
+
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
@@ -75,3 +77,85 @@ function showHighScore() {
     ctx.fillStyle = 'rgba(200, 200, 200, 1)';
     ctx.fillText(localStorage.highScore, margin, canvas.height - (margin + gap));
 }
+
+
+function enterFull() {
+
+    window.moveTo(0, 0);
+
+    if (canvas.requestFullscreen) {
+        canvas.requestFullscreen();
+    } else if (canvas.webkitRequestFullscreen) {
+        canvas.webkitRequestFullscreen();
+    } else if (canvas.mozRequestFullScreen) {
+        canvas.mozRequestFullScreen();
+    } else if (canvas.msRequestFullscreen) {
+        canvas.msRequestFullscreen();
+    }
+}
+
+function exitFull() {
+
+    if (document.cancelFullScreen) {
+        document.cancelFullScreen();
+        return true;
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+        return true;
+    } else if (document.webkitCancelFullScreen) {
+        document.webkitCancelFullScreen();
+        return true;
+    }
+
+}
+
+let mousePos = new Coordinate();
+function updateMousePos(e) {
+    mousePos.x = e.pageX;
+    mousePos.y = e.pageY;
+}
+
+canvas.addEventListener("click", updateMousePos, false);
+
+let fullscreenButtonRect;
+let fullscreenButtonSize;
+function updateFullscreenButtonSize() {
+    fullscreenButtonSize = Math.min(canvas.width, canvas.height) / 15;
+    fullscreenButtonRect = new Rect(canvas.width - 2 * fullscreenButtonSize,
+        canvas.height - 2 * fullscreenButtonSize,
+        fullscreenButtonSize,
+        fullscreenButtonSize);
+}
+
+function showFullScreenButton() {
+    updateFullscreenButtonSize()
+    
+    let image;
+    if (window.innerHeight === screen.height) {
+        image = images.other.fromFull;
+    } else {
+        image = images.other.toFull;
+    }
+
+    drawRotatedImage(image, fullscreenButtonRect, 0);
+}
+
+// Fullscreen button
+canvas.addEventListener('click', function () {
+
+    let windowScale = canvas.height / 500;
+    let mouseRect = new Rect(mousePos.x, mousePos.y, 0, 0);
+
+    console.log(mouseRect, fullscreenButtonRect)
+    if (touching(mouseRect, fullscreenButtonRect)) {
+
+        // Try change fullscreen
+        if (window.innerHeight === screen.height) {
+            exitFull();
+            cancelInput = true;
+        } else {
+            enterFull();
+            cancelInput = true;
+        }
+    }
+});
