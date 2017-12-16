@@ -18,6 +18,8 @@ let buttonSize = new Size(canvas.width / 3, canvas.height / 2);
 function triggerMobileInput(e) {
     let mouseRect = new Rect(e.touches[0].clientX, e.touches[0].clientX, 0, 0);
 
+    console.log(mouseRect, fullscreenButtonRect)
+
     if (!touching(mouseRect, fullscreenButtonRect)) {
         getMobileInput(e)
     }

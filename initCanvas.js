@@ -118,9 +118,9 @@ canvas.addEventListener("click", updateMousePos, false);
 let fullscreenButtonRect;
 let fullscreenButtonSize;
 function updateFullscreenButtonSize() {
-    fullscreenButtonSize = Math.min(canvas.width, canvas.height) / 15;
-    fullscreenButtonRect = new Rect(canvas.width - 2 * fullscreenButtonSize,
-        canvas.height - 2 * fullscreenButtonSize,
+    fullscreenButtonSize = Math.min(canvas.width, canvas.height) / 10;
+    fullscreenButtonRect = new Rect(canvas.width - 1.4 * fullscreenButtonSize,
+        canvas.height - 1.4 * fullscreenButtonSize,
         fullscreenButtonSize,
         fullscreenButtonSize);
 }
