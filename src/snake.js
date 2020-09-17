@@ -1,6 +1,9 @@
 import Draw from "./draw.js";
 
 
+/**
+ * Class to handle snake
+ */
 export default class Snake {
 
     /**
@@ -8,7 +11,9 @@ export default class Snake {
      * Put it at the start position
      * @param {{x, y}} startPosition 
      */
-    constructor(startPosition) {
+    constructor(startPosition, gridSize) {
+        this.gridSize = gridSize;
+
         this.positions = [startPosition];
         this.length = 1;
 
@@ -45,8 +50,31 @@ export default class Snake {
     move() {
         let lastPosition = this.positions[0];
         let change = this.controls[this.direction].change;
-        let newPosition = { x: lastPosition.x + change.x, y: lastPosition.y + change.y }
+        let newPosition = fixPosition({ x: lastPosition.x + change.x, y: lastPosition.y + change.y }, this.gridSize);
         this.addPosition(newPosition);
+    }
+
+    /**
+     * Has the snake eaten itself?
+     * Checks whether the head position is repeated in the positions
+     */
+    isDead() {
+        return this.isPositionTaken(this.positions[0]);
+    }
+
+    /**
+     * Is the position already taken up by the snake?
+     * Doesn't check the head
+     * @param {{int, int}} position 
+     * @returns whether the position is taken
+     */
+    isPositionTaken(position) {
+        for (let snakePosition of this.positions.slice(1, this.length)) {
+            if (position.x == snakePosition.x && position.y == snakePosition.y) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -57,7 +85,59 @@ export default class Snake {
         this.positions.unshift(newPosition);
     }
 
+    /**
+     * Show the snake as a gray gradient (black = head)
+     * 
+     */
     show() {
-        Draw.fillCell(this.positions[0], "#000");
+        // for (let position of this.getPositions()) {
+        for (let i = 0; i < this.length; i++) {
+            let light = Math.floor((i / this.length) * 9).toString();
+            let color = "#" + light + light + light;
+            Draw.fillCell(this.positions[i], color);
+        }
     }
+
+    /**
+     * Increase the length of the snake by 1
+     */
+    increaseLength() {
+        this.length += 1;
+    }
+
+    /**
+     * Get an array of the current positions of the snake
+     * Head is at index 0
+     */
+    getPositions() {
+        return this.positions.slice(0, this.length);
+    }
+}
+
+
+/**
+ * Fix the position so its on the grid
+ * Just does an unsigned modulo on the attributes of position
+ * @param {*} position 
+ * @param {*} gridSize 
+ */
+function fixPosition(position, gridSize) {
+    return { x: unsignedModulo(position.x, gridSize.x), y: unsignedModulo(position.y, gridSize.y) }
+}
+
+
+/**
+ * TODO put somewhere else so it doesn't have to be in snake.js and draw.js
+ * returns value % mod
+ * BUT value is never negative.
+ * 0 <= value <= mod rather than -mod < value < mod
+ * @param {float} value to find mod of
+ * @param {int} mod
+ */
+function unsignedModulo(value, mod) {
+    let remainder = value % mod;
+    if (remainder < 0) {
+        remainder += mod;
+    }
+    return remainder;
 }

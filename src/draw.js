@@ -77,6 +77,7 @@ class Draw {
 
 
 /**
+ * TODO put somewhere else so it doesn't have to be in snake.js and draw.js
  * returns value % mod
  * BUT value is never negative.
  * 0 <= value <= mod rather than -mod < value < mod

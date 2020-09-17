@@ -1,18 +1,23 @@
 import Display from "./display.js";
 import Draw from "./draw.js";
 import Snake from "./snake.js";
+import FoodHandler from "./foodHandler.js";
 
 
 export default class Game {
 
     constructor() {
-        this.gridSize = { x: 10, y: 10 };
+        this.gridSize = { x: 25, y: 25 };
+        Draw.setGridSize(this.gridSize);
+        this.frameTime = 100; // Time between every game update (ms) = snake move speed
+        this.start()
+    }
 
-        this.frameTime = 500; // Time between every game update (ms) = snake move speed
-        this.lastFrameTime = Date.now();
-
-        Draw.setGridSize(this.gridSize); // Let the drawer know what the grid size is
-        this.snake = new Snake({ x: Math.floor(this.gridSize.x / 2), y: Math.floor(this.gridSize.y / 2) });
+    start() {
+        this.lastFrameTime = -1;
+        this.snake = new Snake({ x: Math.floor(this.gridSize.x / 2), y: Math.floor(this.gridSize.y / 2) }, this.gridSize);
+        this.foodHandler = new FoodHandler(this.gridSize);
+        this.foodHandler.spawn(this.snake.positions); // Make a food right off the bat
     }
 
     /**
@@ -20,11 +25,15 @@ export default class Game {
      * Run Game.update every frameTime seconds
      */
     loop() {
-
         let currentTime = Date.now();
-        if (this.lastFrameTime + this.frameTime <= currentTime) {
-            this.update();
+        if (this.lastFrameTime + this.frameTime <= currentTime || this.lastFrameTime == -1) {
             this.lastFrameTime = currentTime;
+            this.update();
+
+            // Is snake dead? if so, restart game
+            if (this.snake.isDead()) {
+                this.start() // restarts game
+            }
         }
 
         window.requestAnimationFrame(() => this.loop());
@@ -39,7 +48,11 @@ export default class Game {
         Draw.fillBackground("#EEE");
         Draw.drawGameRect("#DDD");
 
-        this.snake.show();
         this.snake.move();
+        this.foodHandler.update(this.snake);
+
+        this.foodHandler.show();
+        this.snake.show();
+
     }
 }
