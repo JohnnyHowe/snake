@@ -48,11 +48,15 @@ export default class Game {
         Draw.fillBackground("#EEE");
         Draw.drawGameRect("#DDD");
 
-        this.snake.move();
-        this.foodHandler.update(this.snake);
+        if (Display.isFocused()) {
+            document.getElementById("overlay").style.display = "none";
+            this.snake.move();
+            this.foodHandler.update(this.snake);
+        } else {
+            document.getElementById("overlay").style.display = "block";
+        }
 
         this.foodHandler.show();
         this.snake.show();
-
     }
 }

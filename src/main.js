@@ -1,5 +1,4 @@
 import Display from "./display.js";
-import Draw from "./draw.js";
 import Game from "./game.js";
 
 

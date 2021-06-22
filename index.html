@@ -1,36 +1,55 @@
 <html>
 
 <head>
-    <!--320-->
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" /> -->
-    <!-- <meta name="theme-color" content="#2196F3" /> -->
-    <!-- <link rel="manifest" href="manifest.json"> -->
-
     <title>Snake</title>
 
     <style>
         * {
             margin: 0;
         }
-        
+
         html {
             overflow-x: hidden;
             overflow-y: hidden;
             width: 100%;
             height: 100%;
         }
-        /*         
-        @font-face {
-            font-family: "scoreFont";
-            src: url("beefd.ttf")
-        } */
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        #overlay-text {
+            color: #333;
+            text-align: center;
+            font-size: 5em;
+            padding-top: 20px;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+
+        #overlay-p {
+            color: #333;
+            text-align: center;
+            font-size: 2em;
+            padding-top: 20px;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
     </style>
 </head>
 
-<body>
+<body id="body">
     <canvas id="canvas">
         You need javaScript
     </canvas>
+    <div id="overlay">
+        <h1 id="overlay-text">Click here to play Snake!</h1>
+        <p id="overlay-p">WASD or arrow keys to direct snake</p>
+    </div>
     <script type="module" src="src/main.js"></script>
 </body>
 
